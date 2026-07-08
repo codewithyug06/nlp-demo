@@ -1,0 +1,63 @@
+
+
+
+seed: 42
+run_name: cortex_micro
+
+control_mode: shared
+
+model:
+  size: micro
+  vocab_size: 260
+  d_model: 64
+  n_layers: 2
+  n_heads: 4
+  d_ff: 128
+  max_seq_len: 128
+  dropout: 0.0
+  norm: pre
+  tie_embeddings: true
+
+data:
+  task: needle
+  seq_len: 64
+  batch_size: 16
+  n_values: 32
+
+eval:
+  interval: 100
+  batches: 2
+
+patch:
+  aux_weight: 1.0
+  patch_hidden: 32
+  patch_ctx_weight: 0.5
+  patch_use_signal: true
+
+objective:
+  mtp: true
+  mtp_weight: 0.5
+  cal_weight: 1.0
+  ponder_cost: 0.01
+
+optim:
+  lr: 1.0e-3
+  weight_decay: 0.01
+  warmup_steps: 50
+  max_steps: 2
+  grad_clip: 1.0
+  precision: fp32
+  grad_checkpoint: false
+
+subsystems:
+  controller: true
+  dyn_patch: true
+  nope: true
+  attn_budget: true
+  structured_residual: true
+  halting: true
+  latent_loop: true
+  moe: true
+  memory: true
+  consolidate: true
+  spec_decode: true

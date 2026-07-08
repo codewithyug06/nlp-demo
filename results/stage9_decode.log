@@ -1,0 +1,3 @@
+trained; decoding...
+ungated          verify=8.0/40 (5.00x)  accept=1.00  matches_greedy=True
+difficulty-gated verify=8.0/40 (5.00x)  accept=1.00  matches_greedy=True

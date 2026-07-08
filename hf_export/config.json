@@ -1,0 +1,79 @@
+{
+  "auto_map": {
+    "AutoConfig": "configuration_panoptes.PanoptesConfig",
+    "AutoModelForCausalLM": "modeling_panoptes.PanoptesForCausalLM"
+  },
+  "d_ff": 128,
+  "d_model": 64,
+  "dropout": 0.0,
+  "max_seq_len": 128,
+  "model_type": "panoptes",
+  "mtp_depth": 4,
+  "n_heads": 4,
+  "n_layers": 2,
+  "norm": "pre",
+  "panoptes_cfg": {
+    "control_mode": "shared",
+    "data": {
+      "batch_size": 16,
+      "n_values": 32,
+      "seq_len": 64,
+      "task": "needle"
+    },
+    "eval": {
+      "batches": 2,
+      "interval": 100
+    },
+    "model": {
+      "d_ff": 128,
+      "d_model": 64,
+      "dropout": 0.0,
+      "max_seq_len": 128,
+      "n_heads": 4,
+      "n_layers": 2,
+      "norm": "pre",
+      "size": "micro",
+      "tie_embeddings": true,
+      "vocab_size": 260
+    },
+    "objective": {
+      "cal_weight": 1.0,
+      "mtp": true,
+      "mtp_weight": 0.5,
+      "ponder_cost": 0.01
+    },
+    "optim": {
+      "grad_checkpoint": false,
+      "grad_clip": 1.0,
+      "lr": 0.001,
+      "max_steps": 2,
+      "precision": "fp32",
+      "warmup_steps": 50,
+      "weight_decay": 0.01
+    },
+    "patch": {
+      "aux_weight": 1.0,
+      "patch_ctx_weight": 0.5,
+      "patch_hidden": 32,
+      "patch_use_signal": true
+    },
+    "run_name": "panoptes_micro",
+    "seed": 42,
+    "subsystems": {
+      "attn_budget": true,
+      "consolidate": true,
+      "controller": true,
+      "dyn_patch": true,
+      "halting": true,
+      "latent_loop": true,
+      "memory": true,
+      "moe": true,
+      "nope": true,
+      "spec_decode": true,
+      "structured_residual": true
+    }
+  },
+  "tie_embeddings": true,
+  "transformers_version": "5.12.1",
+  "vocab_size": 260
+}

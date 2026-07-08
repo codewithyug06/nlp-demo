@@ -1,0 +1,12 @@
+# CORTEX — pinned-loose deps (§3). Ask before adding more.
+# Target: Python 3.11+, single RTX 5070 Ti (16GB, CUDA 12.8).
+# NOTE: install the CUDA 12.8 torch build for the GPU target:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu128
+torch>=2.4
+numpy>=1.26
+pyyaml>=6.0
+tqdm>=4.66
+einops>=0.7   # optional, used for readable tensor ops
+datasets
+tiktoken
+transformers

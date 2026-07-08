@@ -1,0 +1,8 @@
+variant                       A_before   A_after         B
+baseline (no consolidation)      1.000     0.000     1.000
+EWC (plain Fisher)               1.000     0.256     0.258
+EWC (g-weighted, #11)            1.000     0.256     0.258
+
+retention gain vs baseline:
+  plain EWC     : +0.256
+  g-weighted EWC: +0.256

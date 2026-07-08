@@ -1,0 +1,203 @@
+{
+  "timestamp_utc": "2026-07-03T06:36:19.226913+00:00",
+  "git_hash": "nogit",
+  "seed": 0,
+  "python": "3.12.10",
+  "torch": "2.7.1+cpu",
+  "cuda_available": false,
+  "config": {
+    "seed": 0,
+    "run_name": "dense_baseline",
+    "control_mode": "off",
+    "model": {
+      "size": "10M",
+      "vocab_size": 260,
+      "d_model": 384,
+      "n_layers": 6,
+      "n_heads": 6,
+      "d_ff": 1536,
+      "max_seq_len": 512,
+      "dropout": 0.0,
+      "norm": "pre",
+      "tie_embeddings": true
+    },
+    "data": {
+      "task": "needle",
+      "seq_len": 256,
+      "batch_size": 32,
+      "n_values": 32
+    },
+    "eval": {
+      "interval": 100,
+      "batches": 8
+    },
+    "optim": {
+      "lr": 0.0003,
+      "weight_decay": 0.1,
+      "warmup_steps": 200,
+      "max_steps": 2000,
+      "grad_clip": 1.0,
+      "precision": "bf16",
+      "grad_checkpoint": false
+    },
+    "subsystems": {
+      "controller": false,
+      "dyn_patch": false,
+      "nope": false,
+      "attn_budget": false,
+      "structured_residual": false,
+      "halting": false,
+      "latent_loop": false,
+      "moe": false,
+      "memory": false,
+      "consolidate": false,
+      "spec_decode": false
+    },
+    "_overrides": {
+      "max_steps": 400,
+      "batch_size": 32,
+      "seq_len": 128
+    }
+  },
+  "metrics": {
+    "final_answer_acc": 1.0,
+    "final_eval_loss": 0.000766733443015255,
+    "chance": 0.03125,
+    "beats_chance": true,
+    "controller_enabled": true,
+    "n_params": 10981154,
+    "train_flops_per_seq": 8683388928.0,
+    "wall_seconds": 380.774959564209,
+    "steps": 400,
+    "history": [
+      {
+        "step": 1,
+        "train_loss": 5.626209735870361,
+        "answer_acc": 0.0,
+        "eval_loss": 5.572071135044098,
+        "g_mean": 0.500032901763916,
+        "g_std": 0.00027311345911584795,
+        "g_hard_mean": 0.5000987648963928,
+        "g_easy_mean": 0.500032365322113,
+        "g_hist": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.4375,
+          0.5625,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "step": 100,
+        "train_loss": 3.6313960552215576,
+        "answer_acc": 0.0234375,
+        "eval_loss": 3.692004144191742,
+        "g_mean": 0.5001167058944702,
+        "g_std": 0.0002746923710219562,
+        "g_hard_mean": 0.500127375125885,
+        "g_easy_mean": 0.5001166462898254,
+        "g_hist": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.32861328125,
+          0.67138671875,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "step": 200,
+        "train_loss": 0.011698877438902855,
+        "answer_acc": 1.0,
+        "eval_loss": 0.01091494457796216,
+        "g_mean": 0.5002356171607971,
+        "g_std": 0.0002732178254518658,
+        "g_hard_mean": 0.5001111030578613,
+        "g_easy_mean": 0.5002366304397583,
+        "g_hist": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.186004638671875,
+          0.813995361328125,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "step": 300,
+        "train_loss": 0.0014613950625061989,
+        "answer_acc": 1.0,
+        "eval_loss": 0.0015036363765830174,
+        "g_mean": 0.5002962350845337,
+        "g_std": 0.00027354832855053246,
+        "g_hard_mean": 0.5001224875450134,
+        "g_easy_mean": 0.5002976655960083,
+        "g_hist": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.1334228515625,
+          0.8665771484375,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "step": 400,
+        "train_loss": 0.0008013298502191901,
+        "answer_acc": 1.0,
+        "eval_loss": 0.0007662464267923497,
+        "g_mean": 0.500318169593811,
+        "g_std": 0.00027410476468503475,
+        "g_hard_mean": 0.5001282095909119,
+        "g_easy_mean": 0.5003196597099304,
+        "g_hist": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.11505126953125,
+          0.88494873046875,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "controller": {
+      "g_mean": 0.5003172159194946,
+      "g_std": 0.00027353307814337313,
+      "g_hard_mean": 0.5001282095909119,
+      "g_easy_mean": 0.500318706035614,
+      "g_hist_10bins": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.1145477294921875,
+        0.8854522705078125,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  }
+}

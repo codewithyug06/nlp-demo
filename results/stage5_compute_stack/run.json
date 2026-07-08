@@ -1,0 +1,253 @@
+{
+  "timestamp_utc": "2026-07-03T13:52:16.861252+00:00",
+  "git_hash": "nogit",
+  "seed": 0,
+  "python": "3.12.10",
+  "torch": "2.7.1+cpu",
+  "cuda_available": false,
+  "config": {
+    "seed": 0,
+    "run_name": "dense_baseline",
+    "control_mode": "off",
+    "model": {
+      "size": "10M",
+      "vocab_size": 260,
+      "d_model": 384,
+      "n_layers": 6,
+      "n_heads": 6,
+      "d_ff": 1536,
+      "max_seq_len": 512,
+      "dropout": 0.0,
+      "norm": "pre",
+      "tie_embeddings": true
+    },
+    "data": {
+      "task": "needle",
+      "seq_len": 256,
+      "batch_size": 32,
+      "n_values": 32
+    },
+    "eval": {
+      "interval": 100,
+      "batches": 8
+    },
+    "optim": {
+      "lr": 0.0003,
+      "weight_decay": 0.1,
+      "warmup_steps": 200,
+      "max_steps": 2000,
+      "grad_clip": 1.0,
+      "precision": "bf16",
+      "grad_checkpoint": false
+    },
+    "subsystems": {
+      "controller": false,
+      "dyn_patch": false,
+      "nope": false,
+      "attn_budget": false,
+      "structured_residual": false,
+      "halting": false,
+      "latent_loop": false,
+      "moe": false,
+      "memory": false,
+      "consolidate": false,
+      "spec_decode": false
+    },
+    "_overrides": {
+      "task": "needle",
+      "max_steps": 400,
+      "batch_size": 32,
+      "seq_len": 128
+    }
+  },
+  "metrics": {
+    "task": "needle",
+    "final_answer_acc": 1.0,
+    "final_eval_loss": 0.0010193949965469074,
+    "chance": 0.03125,
+    "beats_chance": true,
+    "passed": true,
+    "controller_enabled": true,
+    "pos": "learned",
+    "dyn_patch": false,
+    "attn_budget": true,
+    "residual": "vanilla",
+    "budget_cost": 0.02,
+    "n_params": 12756003,
+    "train_flops_per_seq": 8683388928.0,
+    "wall_seconds": 1643.076786518097,
+    "steps": 400,
+    "history": [
+      {
+        "step": 1,
+        "train_loss": 5.637137413024902,
+        "answer_acc": 0.0,
+        "eval_loss": 5.598029971122742,
+        "g_mean": 0.5000336170196533,
+        "g_std": 0.00027311008307151496,
+        "g_hard_mean": 0.5001021027565002,
+        "g_easy_mean": 0.5000330805778503,
+        "g_hist": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.435943603515625,
+          0.564056396484375,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "ponder_hard": 3.0536863803863525,
+        "ponder_easy": 2.831002712249756,
+        "ponder_mean": 2.832742214202881,
+        "ponder_min": 2.1926448345184326,
+        "ponder_max": 3.4640893936157227
+      },
+      {
+        "step": 100,
+        "train_loss": 3.653712034225464,
+        "answer_acc": 0.0234375,
+        "eval_loss": 3.6867593824863434,
+        "g_mean": 0.49825918674468994,
+        "g_std": 0.0004081631195731461,
+        "g_hard_mean": 0.5008130073547363,
+        "g_easy_mean": 0.49823909997940063,
+        "g_hist": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.9921875,
+          0.0078125,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "ponder_hard": 3.2468085289001465,
+        "ponder_easy": 1.5118322372436523,
+        "ponder_mean": 1.5253866910934448,
+        "ponder_min": 1.2439786195755005,
+        "ponder_max": 3.3588898181915283
+      },
+      {
+        "step": 200,
+        "train_loss": 0.028604203835129738,
+        "answer_acc": 1.0,
+        "eval_loss": 0.01771073997952044,
+        "g_mean": 0.48712605237960815,
+        "g_std": 0.004400042351335287,
+        "g_hard_mean": 0.5247107148170471,
+        "g_easy_mean": 0.4868301749229431,
+        "g_hist": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.986785888671875,
+          0.013214111328125,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "ponder_hard": 1.6953657865524292,
+        "ponder_easy": 1.7032886743545532,
+        "ponder_mean": 1.7032268047332764,
+        "ponder_min": 1.1595666408538818,
+        "ponder_max": 2.370941162109375
+      },
+      {
+        "step": 300,
+        "train_loss": 0.009181474335491657,
+        "answer_acc": 1.0,
+        "eval_loss": 0.002031528070801869,
+        "g_mean": 0.35772716999053955,
+        "g_std": 0.020325753837823868,
+        "g_hard_mean": 0.476653128862381,
+        "g_easy_mean": 0.3567907512187958,
+        "g_hist": [
+          0.0,
+          0.0,
+          0.0,
+          0.9842529296875,
+          0.00823974609375,
+          0.00750732421875,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "ponder_hard": 1.8304567337036133,
+        "ponder_easy": 1.7394384145736694,
+        "ponder_mean": 1.7401494979858398,
+        "ponder_min": 1.4423376321792603,
+        "ponder_max": 2.1681270599365234
+      },
+      {
+        "step": 400,
+        "train_loss": 0.006780856754630804,
+        "answer_acc": 1.0,
+        "eval_loss": 0.001020552786940243,
+        "g_mean": 0.2850795090198517,
+        "g_std": 0.028385624289512634,
+        "g_hard_mean": 0.4452988803386688,
+        "g_easy_mean": 0.28381794691085815,
+        "g_hist": [
+          0.0,
+          0.0,
+          0.891510009765625,
+          0.092864990234375,
+          0.0086669921875,
+          0.0069580078125,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "ponder_hard": 1.8292198181152344,
+        "ponder_easy": 1.7330553531646729,
+        "ponder_mean": 1.7338064908981323,
+        "ponder_min": 1.458512783050537,
+        "ponder_max": 2.1427857875823975
+      }
+    ],
+    "length_gen": {
+      "128": 1.0,
+      "256": 0.72265625,
+      "384": 0.71484375,
+      "512": 0.609375
+    },
+    "controller": {
+      "g_mean": 0.2850940227508545,
+      "g_std": 0.02841603197157383,
+      "g_hard_mean": 0.4452987313270569,
+      "g_easy_mean": 0.2838325798511505,
+      "g_hist_10bins": [
+        0.0,
+        0.0,
+        0.891204833984375,
+        0.093170166015625,
+        0.00872802734375,
+        0.00689697265625,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "ponder": {
+      "hard": 1.8320657014846802,
+      "easy": 1.7327852249145508,
+      "mean": 1.7335606813430786,
+      "min": 1.447171688079834,
+      "max": 2.1427857875823975,
+      "max_steps": 4,
+      "min_steps": 1,
+      "no_collapse": true,
+      "hard_gt_easy": true
+    }
+  }
+}
