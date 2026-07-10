@@ -19,7 +19,7 @@ import torch
 import torch.nn as nn
 from transformers.modeling_utils import PreTrainedModel
 from .configuration_cortex import CortexConfig
-from .block import TransformerBlock
+from .block import TransformerBlock, RMSNorm
 from .controller import Controller, ControllerSignal
 from .dyn_patch import DynamicPatcher, PatchOutput
 from .halting import PonderInfo
@@ -104,10 +104,10 @@ class CortexForCausalLM(CortexPreTrainedModel):
 
         self.cfg = config 
         self.tok_emb = nn.Embedding(config.vocab_size, config.d_model)
-        self.pos = build_positional(model_cfg.get("pos", "nope"), config.max_seq_len, config.d_model)
+        self.pos = build_positional(model_cfg.get("pos", "nope"), config.max_seq_len, config.d_model, d_head=config.d_model // config.n_heads, rope_theta=config.rope_theta)
         self.drop = nn.Dropout(config.dropout)
         self.blocks = nn.ModuleList([
-            TransformerBlock(config.d_model, config.n_heads, config.d_ff,
+            TransformerBlock(config.d_model, config.n_heads, config.n_kv_heads, config.d_ff,
                              dropout=config.dropout, norm=config.norm,
                              attn_budget=subsys_cfg.get("attn_budget", False), 
                              span_min=model_cfg.get("span_min", 4),
@@ -116,16 +116,18 @@ class CortexForCausalLM(CortexPreTrainedModel):
                              moe=subsys_cfg.get("moe", False), 
                              moe_experts=model_cfg.get("moe_experts", 4),
                              moe_k_max=model_cfg.get("moe_k_max", 2), 
-                             moe_expert_ff=model_cfg.get("moe_expert_ff", 0))
+                             moe_expert_ff=model_cfg.get("moe_expert_ff", 0),
+                             sliding_window=config.sliding_window,
+                             quantize_kv=config.quantize_kv)
             for _ in range(config.n_layers)
         ])
-        self.ln_f = nn.LayerNorm(config.d_model)
+        self.ln_f = RMSNorm(config.d_model)
         self.lm_head = nn.Linear(config.d_model, config.vocab_size, bias=False)
         if config.tie_embeddings:
             self.lm_head.weight = self.tok_emb.weight
             
         if config.mtp_depth > 0:
-            self.mtp_norm = nn.LayerNorm(config.d_model)
+            self.mtp_norm = RMSNorm(config.d_model)
             from cortex.block import ResidualScaler, MLP
             self.mtp_head = nn.ModuleList([
                 MLP(config.d_model, config.d_ff) 
@@ -185,15 +187,27 @@ class CortexForCausalLM(CortexPreTrainedModel):
     def forward(self, x: torch.Tensor,
                 pixel_values: Optional[torch.Tensor] = None,
                 gt_difficulty: Optional[torch.Tensor] = None,
-                patch_aux_weight: float = 0.0,
-                skip_ponder: bool = False) -> torch.Tensor:
+                patch_aux_weight: float = 1.0,
+                skip_ponder: bool = False,
+                use_cache: bool = False,
+                past_key_values: Optional[tuple[tuple[torch.Tensor, torch.Tensor], ...]] = None):
+        """Standard BPTT forward pass. See generate() for inference."""
         B, T = x.shape
-        h = self.tok_emb(x) + self.pos(T, x.device)             
+        start_pos = past_key_values[0][0].shape[2] if past_key_values is not None else 0
         
+        h = self.tok_emb(x)
         if self.vision_encoder is not None and pixel_values is not None:
             v_emb = self.vision_encoder(pixel_values) # (B, N, d_model)
             h = torch.cat((v_emb, h), dim=1)
-            # Controller will naturally process these vision tokens as part of the sequence!
+            
+        T_total = h.shape[1]
+        pos_emb = self.pos(T_total, x.device, start_pos=start_pos)
+        
+        freqs_cis = None
+        if self.cfg.cortex_cfg.get("model", {}).get("pos", "nope") == "rope":
+            freqs_cis = pos_emb
+        else:
+            h = h + pos_emb
             
         h = self.drop(h)
 
@@ -212,11 +226,18 @@ class CortexForCausalLM(CortexPreTrainedModel):
             h = pout.h
             self.last_patch = pout
 
-        for blk in self.blocks:
+        next_cache = () if use_cache else None
+        for i, blk in enumerate(self.blocks):
+            past_key_value = past_key_values[i] if past_key_values is not None else None
+            
             if getattr(self, "gradient_checkpointing", False) and self.training:
-                h = torch.utils.checkpoint.checkpoint(blk, h, signal, use_reentrant=False)
+                h = torch.utils.checkpoint.checkpoint(blk, h, signal, use_cache, past_key_value, freqs_cis, use_reentrant=False)
             else:
-                h = blk(h, signal)
+                if use_cache:
+                    h, present_key_value = blk(h, signal, use_cache=True, past_key_value=past_key_value, freqs_cis=freqs_cis)
+                    next_cache += (present_key_value,)
+                else:
+                    h = blk(h, signal, freqs_cis=freqs_cis)
 
         if self.blocks[0].is_moe:                                
             self.last_moe_aux = torch.stack(
@@ -245,7 +266,11 @@ class CortexForCausalLM(CortexPreTrainedModel):
                 mtp_feat = mtp_feat + res(mlp(self.mtp_norm(mtp_feat)))
                 mtp_list.append(self.lm_head(mtp_feat))
             self.last_mtp = mtp_list
-        return self.lm_head(h)
+            
+        logits = self.lm_head(h)
+        if use_cache:
+            return logits, next_cache
+        return logits
 
     def tie_weights(self, **kwargs):
         if getattr(self.config, "tie_embeddings", False):

@@ -1,2 +1,15 @@
-﻿__pycache__/
+__pycache__/
 *.pyc
+
+# AI Artifacts
+.claude/
+Claude.md
+.gemini/
+
+# Virtual Environments
+.venv/
+train_env/
+
+# Build & Results
+results/
+*.whl

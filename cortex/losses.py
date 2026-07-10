@@ -65,17 +65,18 @@ def mtp_loss(mtp_logits_list: list[torch.Tensor], batch) -> torch.Tensor:
     valid_heads = 0
     
     for i, logits in enumerate(mtp_logits_list):
-        pred = logits[:, :- (i + 1)].reshape(-1, logits.size(-1))
-        gold = batch.y[:, (i + 1):].reshape(-1)
+        pred = logits[:, :- (i + 1)]
+        gold = batch.y[:, (i + 1):]
+        mask = _scored_mask(batch)[:, (i + 1):]
         
-        
-        
-        if (gold != -100).any():
-            if torch.isnan(pred).any():
-                nan_loc = torch.where(torch.isnan(pred))
+        if mask.any():
+            pred_masked = pred[mask]
+            gold_masked = gold[mask]
+            if torch.isnan(pred_masked).any():
+                nan_loc = torch.where(torch.isnan(pred_masked))
                 print(f"NAN LOC: {nan_loc}")
                 import sys; sys.exit(1)
-            total_loss = total_loss + F.cross_entropy(pred, gold)
+            total_loss = total_loss + F.cross_entropy(pred_masked, gold_masked)
             valid_heads += 1
             
     return total_loss / max(valid_heads, 1)

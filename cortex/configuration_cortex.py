@@ -14,8 +14,12 @@ class CortexConfig(PretrainedConfig):
         d_model=384,
         n_layers=6,
         n_heads=6,
+        n_kv_heads=None,
         d_ff=1536,
         max_seq_len=512,
+        rope_theta=500000.0,
+        sliding_window=None,
+        quantize_kv=False,
         dropout=0.0,
         norm="pre",
         tie_embeddings=True,
@@ -28,8 +32,12 @@ class CortexConfig(PretrainedConfig):
         self.d_model = d_model
         self.n_layers = n_layers
         self.n_heads = n_heads
+        self.n_kv_heads = n_kv_heads if n_kv_heads is not None else n_heads
         self.d_ff = d_ff
         self.max_seq_len = max_seq_len
+        self.rope_theta = rope_theta
+        self.sliding_window = sliding_window
+        self.quantize_kv = quantize_kv
         self.dropout = dropout
         self.norm = norm
         self.tie_embeddings = tie_embeddings
@@ -45,8 +53,12 @@ class CortexConfig(PretrainedConfig):
                 "d_model": d_model,
                 "n_layers": n_layers,
                 "n_heads": n_heads,
+                "n_kv_heads": self.n_kv_heads,
                 "d_ff": d_ff,
                 "max_seq_len": max_seq_len,
+                "rope_theta": self.rope_theta,
+                "sliding_window": self.sliding_window,
+                "quantize_kv": self.quantize_kv,
                 "dropout": dropout,
                 "norm": norm,
                 "tie_embeddings": tie_embeddings,

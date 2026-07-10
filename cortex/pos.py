@@ -28,13 +28,13 @@ class LearnedPositional(nn.Module):
         self.max_seq_len = max_seq_len
         self.emb = nn.Embedding(max_seq_len, d_model)
 
-    def forward(self, T: int, device: torch.device) -> torch.Tensor:
-        if T > self.max_seq_len:
+    def forward(self, T: int, device: torch.device, start_pos: int = 0) -> torch.Tensor:
+        if start_pos + T > self.max_seq_len:
             raise ValueError(
-                f"learned positions support T<= {self.max_seq_len}; got {T}. "
+                f"learned positions support T<= {self.max_seq_len}; got {start_pos + T}. "
                 f"Use pos='nope' for length generalization."
             )
-        return self.emb(torch.arange(T, device=device))          
+        return self.emb(torch.arange(start_pos, start_pos + T, device=device))          
 
 
 class NoPE(nn.Module):
@@ -44,16 +44,49 @@ class NoPE(nn.Module):
         super().__init__()
         self.d_model = d_model
 
-    def forward(self, T: int, device: torch.device) -> torch.Tensor:
+    def forward(self, T: int, device: torch.device, **kwargs) -> torch.Tensor:
         return torch.zeros((), device=device)                    
 
 
-def build_positional(mode: str, max_seq_len: int, d_model: int) -> nn.Module:
-    """Factory: 'learned' | 'nope' -> positional module."""
+def precompute_freqs_cis(dim: int, end: int, theta: float = 10000.0) -> torch.Tensor:
+    freqs = 1.0 / (theta ** (torch.arange(0, dim, 2)[: (dim // 2)].float() / dim))
+    t = torch.arange(end, device=freqs.device, dtype=torch.float32)
+    freqs = torch.outer(t, freqs).float()
+    freqs_cis = torch.polar(torch.ones_like(freqs), freqs)  # complex64
+    return freqs_cis
+
+def apply_rotary_emb(xq: torch.Tensor, xk: torch.Tensor, freqs_cis: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+    # xq: (B, T, n_heads, d_head) -> (B, T, n_heads, d_head/2, 2)
+    xq_ = torch.view_as_complex(xq.float().reshape(*xq.shape[:-1], -1, 2))
+    xk_ = torch.view_as_complex(xk.float().reshape(*xk.shape[:-1], -1, 2))
+    
+    # freqs_cis is (T, d_head/2)
+    freqs_cis = freqs_cis.unsqueeze(0).unsqueeze(2) # (1, T, 1, d_head/2)
+    xq_out = torch.view_as_real(xq_ * freqs_cis).flatten(3)
+    xk_out = torch.view_as_real(xk_ * freqs_cis).flatten(3)
+    return xq_out.type_as(xq), xk_out.type_as(xk)
+
+
+class RotaryEmbedding(nn.Module):
+    def __init__(self, d_head: int, max_seq_len: int = 2048, rope_theta: float = 10000.0):
+        super().__init__()
+        self.d_head = d_head
+        # Precompute freqs_cis for max_seq_len.
+        freqs_cis = precompute_freqs_cis(d_head, max_seq_len, theta=rope_theta)
+        self.register_buffer("freqs_cis", freqs_cis)
+
+    def forward(self, T: int, device: torch.device, start_pos: int = 0) -> torch.Tensor:
+        # Return the slice of freqs_cis for the current sequence
+        return self.freqs_cis[start_pos : start_pos + T].to(device)
+
+def build_positional(mode: str, max_seq_len: int, d_model: int, d_head: int = 64, rope_theta: float = 10000.0) -> nn.Module:
+    """Factory: 'learned' | 'nope' | 'rope' -> positional module."""
     if mode == "learned":
         return LearnedPositional(max_seq_len, d_model)
     if mode == "nope":
         return NoPE(d_model)
+    if mode == "rope":
+        return RotaryEmbedding(d_head, max_seq_len, rope_theta=rope_theta)
     raise ValueError(f"unknown positional mode: {mode}")
 
 

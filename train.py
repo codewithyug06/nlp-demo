@@ -141,6 +141,7 @@ def evaluate(model, make_fn, spec, n_batches: int, batch_size: int,
 def main() -> None:
     ap = argparse.ArgumentParser(description="CORTEX trainer")
     ap.add_argument("--config", required=True)
+    ap.add_argument("--resume", action="store_true", help="Resume from checkpoint.pt if it exists")
     ap.add_argument("--max-steps", type=int, default=None)
     ap.add_argument("--batch-size", type=int, default=None)
     ap.add_argument("--seq-len", type=int, default=None)
@@ -323,6 +324,12 @@ def main() -> None:
     )
     
     model = CortexForCausalLM(hf_config).to(device)
+    
+    ckpt_path = Path("results") / cfg.get("run_name", "run") / "checkpoint.pt"
+    if args.resume and ckpt_path.exists():
+        log.info(f"Resuming from checkpoint {ckpt_path}")
+        model.load_state_dict(torch.load(ckpt_path, map_location=device))
+        
     n_params = model.num_params()
     flops = dense_flops_from_cfg(mcfg, dcfg["seq_len"])
     log.info("run=%s device=%s params=%.2fM control_mode=%s task=%s | controller=%s "
@@ -342,6 +349,7 @@ def main() -> None:
     warmup = ocfg.get("warmup_steps", 0)
     grad_clip = ocfg.get("grad_clip", 1.0)
     use_amp = (device.type == "cuda") and (ocfg.get("precision", "bf16") == "bf16")
+    gpu_delay = float(ocfg.get("gpu_delay", 0.0))
 
     train_gen = torch.Generator().manual_seed(seed + 1)  
     history = []
@@ -394,6 +402,9 @@ def main() -> None:
             
         opt.step()
 
+        if gpu_delay > 0.0 and device.type == "cuda":
+            time.sleep(gpu_delay)
+
         if (step + 1) % ecfg["interval"] == 0 or step == 0:
             m = evaluate(model, make_fn, spec, ecfg["batches"], dcfg["batch_size"], device)
             sps = (step + 1) / (time.time() - t0)
@@ -414,6 +425,14 @@ def main() -> None:
                      step + 1, loss.item(), m["eval_loss"], m["answer_acc"],
                      chance, sps, gtxt, ptxt, dtxt, mtxt)
             history.append({"step": step + 1, "train_loss": loss.item(), **m})
+            
+            # Save checkpoint
+            if not ckpt_path.parent.exists():
+                ckpt_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp_path = ckpt_path.with_suffix('.tmp.pt')
+            torch.save(model.state_dict(), tmp_path)
+            tmp_path.replace(ckpt_path)
+            log.info(f"Saved checkpoint to {ckpt_path}")
 
     final = evaluate(model, make_fn, spec, max(ecfg["batches"], 16),
                      dcfg["batch_size"], device)

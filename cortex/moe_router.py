@@ -31,11 +31,12 @@ class Expert(nn.Module):
 
     def __init__(self, d_model: int, d_ff: int):
         super().__init__()
-        self.fc1 = nn.Linear(d_model, d_ff)
-        self.fc2 = nn.Linear(d_ff, d_model)
+        self.fc1 = nn.Linear(d_model, d_ff, bias=False)
+        self.fc3 = nn.Linear(d_model, d_ff, bias=False)
+        self.fc2 = nn.Linear(d_ff, d_model, bias=False)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.fc2(F.gelu(self.fc1(x)))
+        return self.fc2(F.silu(self.fc1(x)) * self.fc3(x))
 
 
 @dataclass
@@ -54,7 +55,7 @@ class MoELayer(nn.Module):
         assert 1 <= k_max <= n_experts <= 8, "keep E<=8 and 1<=k_max<=E"
         self.n_experts = n_experts
         self.k_max = k_max
-        self.router = nn.Linear(d_model, n_experts)
+        self.router = nn.Linear(d_model, n_experts, bias=False)
         self.experts = nn.ModuleList([Expert(d_model, d_ff) for _ in range(n_experts)])
         self.last_info: Optional[MoEInfo] = None
 
