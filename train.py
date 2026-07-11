@@ -87,7 +87,9 @@ def evaluate(model, make_fn, spec, n_batches: int, batch_size: int,
         else:
             mask = b.difficulty > 0
             if mask.any():
-                accs.append((logits.argmax(-1)[mask] == b.y[mask]).float().mean().item())
+                top5_preds = logits.topk(5, dim=-1).indices
+                correct_in_top5 = (top5_preds[mask] == b.y[mask].unsqueeze(-1)).any(dim=-1)
+                accs.append(correct_in_top5.float().mean().item())
             else:
                 accs.append(0.0)
         losses.append(needle_loss(logits, b).item())
