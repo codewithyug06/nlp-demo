@@ -28,10 +28,10 @@ from eval.calibration import calibration_metrics
 from eval.faithfulness import faithfulness_coref
 from eval.flops import dense_flops_from_cfg
 from eval.length_gen import length_gen_eval
-from cortex.dyn_patch import patch_stats
-from cortex.losses import (calibration_loss, lm_loss, mtp_loss, ponder_cost)
-from cortex.modeling_cortex import CortexForCausalLM
-from cortex.configuration_cortex import CortexConfig
+from modern_nlp_architectire.dyn_patch import patch_stats
+from modern_nlp_architectire.losses import (calibration_loss, lm_loss, mtp_loss, ponder_cost)
+from modern_nlp_architectire.modeling import CortexForCausalLM
+from modern_nlp_architectire.configuration import CortexConfig
 from utils import (banner, get_device, get_logger, load_config, set_seed,
                    write_run_json)
 

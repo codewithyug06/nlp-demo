@@ -88,4 +88,4 @@ def run_training_loop(config_path: str):
                 time.sleep(10)
 
 if __name__ == "__main__":
-    run_training_loop("configs/cortex_language.yaml")
+    run_training_loop("configs/language.yaml")

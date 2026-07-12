@@ -10,7 +10,7 @@ import torch.nn.functional as F
 import os
 import sys
 
-from cortex.model import build_model
+from modern_nlp_architectire.model import build_model
 from data.synthetic import make_batch as make_needle_batch, NeedleSpec
 
 def load_yaml(path: str) -> dict:

@@ -7,15 +7,15 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel
 import os
 
-from cortex.configuration_cortex import CortexConfig
-from cortex.modeling_cortex import CortexForCausalLM
+from modern_nlp_architectire.configuration import CortexConfig
+from modern_nlp_architectire.modeling import CortexForCausalLM
 from utils import load_config
 
 app = FastAPI()
 
 # Load Model
 # Load Model
-cfg = load_config("configs/cortex_language_large.yaml")
+cfg = load_config("configs/language_large.yaml")
 config = CortexConfig(cortex_cfg=cfg, **cfg["model"])
 config.max_seq_len = 2048
 config.quantize_kv = True 

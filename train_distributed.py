@@ -18,9 +18,9 @@ from torch.distributed.fsdp import FullyShardedDataParallel as FSDP
 from torch.distributed.fsdp.wrap import transformer_auto_wrap_policy
 from functools import partial
 
-from cortex.modeling_cortex import CortexForCausalLM
-from cortex.configuration_cortex import CortexConfig
-from cortex.block import TransformerBlock
+from modern_nlp_architectire.modeling import CortexForCausalLM
+from modern_nlp_architectire.configuration import CortexConfig
+from modern_nlp_architectire.block import TransformerBlock
 
 def setup_distributed():
     if not torch.distributed.is_available():
