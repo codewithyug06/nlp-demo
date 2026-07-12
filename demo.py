@@ -14,13 +14,23 @@ from utils import load_config
 app = FastAPI()
 
 # Load Model
-cfg = load_config("configs/cortex_language.yaml")
+# Load Model
+cfg = load_config("configs/cortex_language_large.yaml")
 config = CortexConfig(cortex_cfg=cfg, **cfg["model"])
+config.max_seq_len = 2048
 config.quantize_kv = True 
 config.sliding_window = 128
 
 device = "cpu"
 model = CortexForCausalLM(config).to(device)
+
+ckpt_path = "results/cortex_language_large/checkpoint.pt"
+if os.path.exists(ckpt_path):
+    try:
+        model.load_state_dict(torch.load(ckpt_path, map_location=device))
+    except Exception as e:
+        print(f"Warning: Could not load checkpoint: {e}")
+
 model.eval()
 enc = tiktoken.get_encoding("cl100k_base")
 
